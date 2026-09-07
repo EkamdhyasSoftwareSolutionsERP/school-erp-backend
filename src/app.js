@@ -9,6 +9,8 @@ const { loginSchema } = require("./modules/auth/auth.validation");
 
 const authRoutes = require("./modules/auth/auth.routes");
 
+const organizationRoutes = require("./modules/organization/organization.routes");
+
 
 app.use(express.json());
 
@@ -35,6 +37,7 @@ app.post(
 
 
 app.use("/api/v1/auth", authRoutes);
+app.use("/api/v1/organizations", organizationRoutes);
 
 // Not Found Middleware
 app.use(notFound);

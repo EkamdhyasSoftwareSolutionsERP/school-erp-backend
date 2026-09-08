@@ -11,6 +11,7 @@ const authRoutes = require("./modules/auth/auth.routes");
 
 const organizationRoutes = require("./modules/organization/organization.routes");
 
+const schoolRoutes = require("./modules/school/school.routes");
 
 app.use(express.json());
 
@@ -38,6 +39,11 @@ app.post(
 
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/organizations", organizationRoutes);
+
+app.use(
+  "/api/v1/schools",
+  schoolRoutes
+);
 
 // Not Found Middleware
 app.use(notFound);

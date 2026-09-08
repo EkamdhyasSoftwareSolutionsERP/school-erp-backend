@@ -13,6 +13,9 @@ const organizationRoutes = require("./modules/organization/organization.routes")
 
 const schoolRoutes = require("./modules/school/school.routes");
 
+const academicYearRoutes =
+  require("./modules/academic-year/academicYear.routes");
+
 app.use(express.json());
 
 app.get("/api/v1/health", (req, res) => {
@@ -39,6 +42,11 @@ app.post(
 
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/organizations", organizationRoutes);
+
+app.use(
+  "/api/v1/academic-years",
+  academicYearRoutes
+);
 
 app.use(
   "/api/v1/schools",

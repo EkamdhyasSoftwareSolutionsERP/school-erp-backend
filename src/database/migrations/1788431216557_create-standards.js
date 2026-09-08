@@ -51,6 +51,8 @@ exports.up = (pgm) => {
   pgm.addConstraint("standards", "unique_school_standard", {
     unique: ["school_id", "name"],
   });
+
+ 
 };
 
 exports.down = (pgm) => {

@@ -19,6 +19,9 @@ const academicYearRoutes =
 const standardRoutes =
   require("./modules/standard/standard.routes");
 
+const divisionRoutes =
+  require("./modules/division/division.routes");
+
 app.use(express.json());
 
 app.get("/api/v1/health", (req, res) => {
@@ -59,6 +62,11 @@ app.use(
 app.use(
   "/api/v1/standards",
   standardRoutes
+);
+
+app.use(
+  "/api/v1/divisions",
+  divisionRoutes
 );
 
 // Not Found Middleware

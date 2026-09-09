@@ -8,6 +8,7 @@ const seedDatabase = async () => {
 
     await seedRoles();
     await seedPermissions();
+    await seedRolePermissions();
 
     console.log("✅ Database seeding completed");
 
@@ -79,6 +80,8 @@ const seedPermissions = async () => {
     ["subject.create", "Create subjects"],
     ["subject.update", "Update subjects"],
     ["subject.delete", "Delete subjects"],
+
+    ["audit.read", "View audit logs"],
   ];
 
   for (const permission of permissions) {
@@ -93,6 +96,47 @@ const seedPermissions = async () => {
   }
 
   console.log("✅ Permissions seeded");
+};
+
+const seedRolePermissions = async () => {
+  // Get SUPER_ADMIN role
+  const roleResult = await pool.query(`
+    SELECT id
+    FROM roles
+    WHERE name = 'SUPER_ADMIN'
+  `);
+
+  const superAdminRole = roleResult.rows[0];
+
+  if (!superAdminRole) {
+    throw new Error("SUPER_ADMIN role not found");
+  }
+
+  // Get all permissions
+  const permissionResult = await pool.query(`
+    SELECT id
+    FROM permissions
+  `);
+
+  // Assign all permissions to SUPER_ADMIN
+  for (const permission of permissionResult.rows) {
+    await pool.query(
+      `
+      INSERT INTO role_permissions (
+        role_id,
+        permission_id
+      )
+      VALUES ($1, $2)
+      ON CONFLICT DO NOTHING
+      `,
+      [
+        superAdminRole.id,
+        permission.id,
+      ]
+    );
+  }
+
+  console.log("✅ Role permissions seeded");
 };
 
 seedDatabase();

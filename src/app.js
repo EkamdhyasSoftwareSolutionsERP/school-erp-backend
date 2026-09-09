@@ -1,4 +1,6 @@
 const express = require("express");
+const swaggerUi = require("swagger-ui-express");
+const swaggerSpec = require("./config/swagger/swagger");
 
 const app = express();
 const notFound = require("./middleware/notFound");
@@ -50,7 +52,15 @@ app.post(
 );
 
 
+
+
 app.use("/api/v1/auth", authRoutes);
+
+app.use(
+  "/api-docs",
+  swaggerUi.serve,
+  swaggerUi.setup(swaggerSpec)
+);
 app.use("/api/v1/organizations", organizationRoutes);
 
 app.use(

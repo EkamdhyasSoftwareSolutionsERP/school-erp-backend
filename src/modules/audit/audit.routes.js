@@ -9,7 +9,30 @@ const permission = require("../../middleware/permission");
 const router = express.Router();
 
 
-// Get All Audit Logs
+/**
+ * @swagger
+ * tags:
+ *   name: Audit Logs
+ *   description: Audit log and system activity APIs
+ */
+
+
+/**
+ * @swagger
+ * /audit-logs:
+ *   get:
+ *     summary: Get all audit logs
+ *     tags: [Audit Logs]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Audit logs fetched successfully
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Permission denied
+ */
 router.get(
   "/",
   authenticate,
@@ -18,7 +41,32 @@ router.get(
 );
 
 
-// Get Audit Log By ID
+/**
+ * @swagger
+ * /audit-logs/{id}:
+ *   get:
+ *     summary: Get audit log by ID
+ *     tags: [Audit Logs]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: Audit log UUID
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     responses:
+ *       200:
+ *         description: Audit log fetched successfully
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Permission denied
+ *       404:
+ *         description: Audit log not found
+ */
 router.get(
   "/:id",
   authenticate,

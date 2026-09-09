@@ -22,6 +22,8 @@ const standardRoutes =
 const divisionRoutes =
   require("./modules/division/division.routes");
 
+const subjectRoutes = require("./modules/subject/subject.routes"); 
+
 app.use(express.json());
 
 app.get("/api/v1/health", (req, res) => {
@@ -68,6 +70,8 @@ app.use(
   "/api/v1/divisions",
   divisionRoutes
 );
+
+app.use("/api/v1/subjects", subjectRoutes);
 
 // Not Found Middleware
 app.use(notFound);

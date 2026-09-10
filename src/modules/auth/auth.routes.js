@@ -4,8 +4,11 @@ const authController = require("./auth.controller");
 
 const validate = require("../../middleware/validate");
 
-const { loginSchema } = require("./auth.validation");
-
+const {
+  loginSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
+} = require("./auth.validation");
 const authenticate = require("../../middleware/authenticate");
 
 const authorize = require("../../middleware/authorize");
@@ -59,6 +62,75 @@ router.post(
   "/login",
   validate(loginSchema),
   authController.login
+);
+
+/**
+ * @swagger
+ * /auth/forgot-password:
+ *   post:
+ *     summary: Start password reset
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: admin@example.com
+ *     responses:
+ *       200:
+ *         description: Password reset instructions generated
+ *       400:
+ *         description: Validation failed
+ */
+router.post(
+  "/forgot-password",
+  validate(forgotPasswordSchema),
+  authController.forgotPassword
+);
+
+/**
+ * @swagger
+ * /auth/reset-password:
+ *   post:
+ *     summary: Reset user password
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - resetToken
+ *               - newPassword
+ *             properties:
+ *               resetToken:
+ *                 type: string
+ *                 example: 8f4c2a...
+ *               newPassword:
+ *                 type: string
+ *                 minLength: 8
+ *                 maxLength: 128
+ *                 example: NewPassword123
+ *     responses:
+ *       200:
+ *         description: Password reset successfully
+ *       400:
+ *         description: Invalid or expired reset token
+ *       404:
+ *         description: User not found
+ */
+router.post(
+  "/reset-password",
+  validate(resetPasswordSchema),
+  authController.resetPassword
 );
 
 

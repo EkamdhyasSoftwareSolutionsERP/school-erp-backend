@@ -1,4 +1,5 @@
 const bcrypt = require("bcrypt");
+const crypto = require("crypto");
 
 const authRepository = require("./auth.repository");
 
@@ -132,9 +133,106 @@ const getCurrentUser = async (userId) => {
   };
 };
 
+const forgotPassword = async (email) => {
+  const user = await authRepository.findUserByEmail(email);
+
+  // Do not reveal whether the email exists
+  if (!user) {
+    return true;
+  }
+
+  if (!user.is_active) {
+    return true;
+  }
+
+  // Generate secure random token
+  const resetToken = crypto.randomBytes(32).toString("hex");
+
+  // Store only the hash in database
+  const tokenHash = crypto
+    .createHash("sha256")
+    .update(resetToken)
+    .digest("hex");
+
+  // Token valid for 15 minutes
+  const expiresAt = new Date(
+    Date.now() + 15 * 60 * 1000
+  );
+
+  await authRepository.createPasswordResetToken({
+    userId: user.id,
+    tokenHash,
+    expiresAt,
+  });
+
+  /*
+   * Development:
+   * Return the token temporarily so it can be tested with Postman.
+   *
+   * Production:
+   * Send this token through the configured email service
+   * and never return it in the API response.
+   */
+  return {
+    resetToken,
+  };
+};
+
+const resetPassword = async (resetToken, newPassword) => {
+  if (!resetToken || !newPassword) {
+    throw new ApiError(
+      400,
+      "Reset token and new password are required"
+    );
+  }
+
+  // Hash the token received from the client
+  const tokenHash = crypto
+    .createHash("sha256")
+    .update(resetToken)
+    .digest("hex");
+
+  // Find valid, unused, non-expired token
+  const storedToken =
+    await authRepository.findValidPasswordResetToken(tokenHash);
+
+  if (!storedToken) {
+    throw new ApiError(
+      400,
+      "Invalid or expired reset token"
+    );
+  }
+
+  // Hash new password
+  const passwordHash = await bcrypt.hash(newPassword, 12);
+
+  // Update user's password
+  const user = await authRepository.updateUserPassword(
+    storedToken.user_id,
+    passwordHash
+  );
+
+  if (!user) {
+    throw new ApiError(404, "User not found");
+  }
+
+  // Mark reset token as used
+  await authRepository.markPasswordResetTokenUsed(
+    storedToken.id
+  );
+
+  return {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+  };
+};
+
 
 module.exports = {
   login,
+  forgotPassword,
+  resetPassword,
   refreshAccessToken,
   logout,
   getCurrentUser,

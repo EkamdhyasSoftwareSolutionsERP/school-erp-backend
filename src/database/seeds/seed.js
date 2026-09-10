@@ -54,7 +54,7 @@ const seedPermissions = async () => {
     ["user.read", "View users"],
     ["user.create", "Create users"],
     ["user.update", "Update users"],
-    ["user.delete", "Delete users"],
+    ["user.status", "Activate or deactivate users"],
 
     ["role.read", "View roles"],
     ["role.create", "Create roles"],

@@ -28,6 +28,8 @@ const subjectRoutes = require("./modules/subject/subject.routes");
 
 const auditRoutes = require("./modules/audit/audit.routes");
 
+const userRoutes = require("./modules/user/user.routes");
+
 app.use(express.json());
 
 app.get("/api/v1/health", (req, res) => {
@@ -86,6 +88,8 @@ app.use(
 app.use("/api/v1/subjects", subjectRoutes);
 
 app.use("/api/v1/audit-logs", auditRoutes);
+
+app.use("/api/v1/users", userRoutes);
 
 // Not Found Middleware
 app.use(notFound);

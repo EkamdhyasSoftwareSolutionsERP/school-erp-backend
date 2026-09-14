@@ -2,6 +2,8 @@ const roleRepository = require("./role.repository");
 
 const ApiError = require("../../common/ApiError");
 
+const permissionRepository = require("../permission/permission.repository");
+
 const getAllRoles = async () => {
   return await roleRepository.getAllRoles();
 };
@@ -77,6 +79,74 @@ const deleteRole = async (id) => {
   return true;
 };
 
+const getRolePermissions = async (roleId) => {
+  const role = await roleRepository.getRoleById(roleId);
+
+  if (!role) {
+    throw new ApiError(404, "Role not found");
+  }
+
+  return await roleRepository.getRolePermissions(roleId);
+};
+
+const assignPermissionToRole = async (roleId, permissionId) => {
+  const role = await roleRepository.getRoleById(roleId);
+
+  if (!role) {
+    throw new ApiError(404, "Role not found");
+  }
+
+  const permission = await permissionRepository.getPermissionById(
+    permissionId
+  );
+
+  if (!permission) {
+    throw new ApiError(404, "Permission not found");
+  }
+
+  const existingPermissions = await roleRepository.getRolePermissions(roleId);
+
+  const alreadyAssigned = existingPermissions.some(
+    (item) => item.id === permissionId
+  );
+
+  if (alreadyAssigned) {
+    throw new ApiError(409, "Permission already assigned to role");
+  }
+
+  return await roleRepository.assignPermissionToRole(
+    roleId,
+    permissionId
+  );
+};
+
+const removePermissionFromRole = async (roleId, permissionId) => {
+  const role = await roleRepository.getRoleById(roleId);
+
+  if (!role) {
+    throw new ApiError(404, "Role not found");
+  }
+
+  const permission = await permissionRepository.getPermissionById(
+    permissionId
+  );
+
+  if (!permission) {
+    throw new ApiError(404, "Permission not found");
+  }
+
+  const removed = await roleRepository.removePermissionFromRole(
+    roleId,
+    permissionId
+  );
+
+  if (!removed) {
+    throw new ApiError(404, "Permission is not assigned to this role");
+  }
+
+  return removed;
+};
+
 module.exports = {
   getAllRoles,
   getRoleById,
@@ -84,4 +154,7 @@ module.exports = {
   updateRole,
   updateRoleStatus,
   deleteRole,
+  getRolePermissions,
+  assignPermissionToRole,
+  removePermissionFromRole,
 };

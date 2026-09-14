@@ -1,8 +1,10 @@
 const express = require("express");
+
 const swaggerUi = require("swagger-ui-express");
 const swaggerSpec = require("./config/swagger/swagger");
 
 const app = express();
+
 const notFound = require("./middleware/notFound");
 const errorHandler = require("./middleware/errorHandler");
 
@@ -10,29 +12,40 @@ const validate = require("./middleware/validate");
 const { loginSchema } = require("./modules/auth/auth.validation");
 
 const authRoutes = require("./modules/auth/auth.routes");
-
 const organizationRoutes = require("./modules/organization/organization.routes");
-
 const schoolRoutes = require("./modules/school/school.routes");
-
-const academicYearRoutes =
-  require("./modules/academic-year/academicYear.routes");
-
-const standardRoutes =
-  require("./modules/standard/standard.routes");
-
-const divisionRoutes =
-  require("./modules/division/division.routes");
-
-const subjectRoutes = require("./modules/subject/subject.routes"); 
-
+const academicYearRoutes = require("./modules/academic-year/academicYear.routes");
+const standardRoutes = require("./modules/standard/standard.routes");
+const divisionRoutes = require("./modules/division/division.routes");
+const subjectRoutes = require("./modules/subject/subject.routes");
 const auditRoutes = require("./modules/audit/audit.routes");
-
 const userRoutes = require("./modules/user/user.routes");
-
 const roleRoutes = require("./modules/role/role.routes");
+const permissionRoutes = require("./modules/permission/permission.routes");
 
 app.use(express.json());
+
+app.use("/api/v1/auth", authRoutes);
+
+app.use("/api/v1/organizations", organizationRoutes);
+
+app.use("/api/v1/academic-years", academicYearRoutes);
+
+app.use("/api/v1/schools", schoolRoutes);
+
+app.use("/api/v1/standards", standardRoutes);
+
+app.use("/api/v1/divisions", divisionRoutes);
+
+app.use("/api/v1/subjects", subjectRoutes);
+
+app.use("/api/v1/audit-logs", auditRoutes);
+
+app.use("/api/v1/users", userRoutes);
+
+app.use("/api/v1/roles", roleRoutes);
+
+app.use("/api/v1/permissions", permissionRoutes);
 
 app.get("/api/v1/health", (req, res) => {
   res.status(200).json({
@@ -40,8 +53,6 @@ app.get("/api/v1/health", (req, res) => {
     message: "ERP API is running",
   });
 });
-
-
 
 app.post(
   "/api/v1/test-validation",
@@ -55,45 +66,11 @@ app.post(
   }
 );
 
-
-
-
-app.use("/api/v1/auth", authRoutes);
-
 app.use(
   "/api-docs",
   swaggerUi.serve,
   swaggerUi.setup(swaggerSpec)
 );
-app.use("/api/v1/organizations", organizationRoutes);
-
-app.use(
-  "/api/v1/academic-years",
-  academicYearRoutes
-);
-
-app.use(
-  "/api/v1/schools",
-  schoolRoutes
-);
-
-app.use(
-  "/api/v1/standards",
-  standardRoutes
-);
-
-app.use(
-  "/api/v1/divisions",
-  divisionRoutes
-);
-
-app.use("/api/v1/subjects", subjectRoutes);
-
-app.use("/api/v1/audit-logs", auditRoutes);
-
-app.use("/api/v1/users", userRoutes);
-
-app.use("/api/v1/roles", roleRoutes);
 
 // Not Found Middleware
 app.use(notFound);

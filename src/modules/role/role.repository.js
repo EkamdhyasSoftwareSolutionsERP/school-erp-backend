@@ -142,6 +142,52 @@ const deleteRole = async (id) => {
   return result.rows[0];
 };
 
+const getRolePermissions = async (roleId) => {
+  const query = `
+    SELECT
+      p.id,
+      p.name,
+      p.description,
+      p.created_at,
+      p.updated_at
+    FROM role_permissions rp
+    INNER JOIN permissions p
+      ON p.id = rp.permission_id
+    WHERE rp.role_id = $1
+    ORDER BY p.name ASC
+  `;
+
+  const result = await db.query(query, [roleId]);
+
+  return result.rows;
+};
+
+const assignPermissionToRole = async (roleId, permissionId) => {
+  const query = `
+    INSERT INTO role_permissions (role_id, permission_id)
+    VALUES ($1, $2)
+    ON CONFLICT (role_id, permission_id) DO NOTHING
+    RETURNING role_id, permission_id, created_at
+  `;
+
+  const result = await db.query(query, [roleId, permissionId]);
+
+  return result.rows[0];
+};
+
+const removePermissionFromRole = async (roleId, permissionId) => {
+  const query = `
+    DELETE FROM role_permissions
+    WHERE role_id = $1
+      AND permission_id = $2
+    RETURNING role_id, permission_id
+  `;
+
+  const result = await db.query(query, [roleId, permissionId]);
+
+  return result.rows[0];
+};
+
 module.exports = {
   getAllRoles,
   getRoleById,
@@ -150,4 +196,7 @@ module.exports = {
   updateRole,
   updateRoleStatus,
   deleteRole,
+  getRolePermissions,
+  assignPermissionToRole,
+  removePermissionFromRole,
 };

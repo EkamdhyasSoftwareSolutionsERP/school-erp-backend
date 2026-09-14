@@ -99,6 +99,63 @@ const deleteRole = async (req, res, next) => {
   }
 };
 
+const getRolePermissions = async (req, res, next) => {
+  try {
+    const permissions = await roleService.getRolePermissions(req.params.id);
+
+    return res
+      .status(200)
+      .json(
+        ApiResponse.success(
+          "Role permissions fetched successfully",
+          permissions
+        )
+      );
+  } catch (error) {
+    next(error);
+  }
+};
+
+const assignPermissionToRole = async (req, res, next) => {
+  try {
+    const result = await roleService.assignPermissionToRole(
+      req.params.id,
+      req.body.permissionId
+    );
+
+    return res
+      .status(201)
+      .json(
+        ApiResponse.success(
+          "Permission assigned to role successfully",
+          result
+        )
+      );
+  } catch (error) {
+    next(error);
+  }
+};
+
+const removePermissionFromRole = async (req, res, next) => {
+  try {
+    const result = await roleService.removePermissionFromRole(
+      req.params.id,
+      req.params.permissionId
+    );
+
+    return res
+      .status(200)
+      .json(
+        ApiResponse.success(
+          "Permission removed from role successfully",
+          result
+        )
+      );
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getAllRoles,
   getRoleById,
@@ -106,4 +163,7 @@ module.exports = {
   updateRole,
   updateRoleStatus,
   deleteRole,
+  getRolePermissions,
+  assignPermissionToRole,
+  removePermissionFromRole,
 };

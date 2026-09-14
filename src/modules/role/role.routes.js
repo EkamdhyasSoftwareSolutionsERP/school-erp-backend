@@ -4,10 +4,15 @@ const roleController = require("./role.controller");
 
 const validate = require("../../middleware/validate");
 
+const validateParams = require("../../middleware/validateParams");
+
 const {
   createRoleSchema,
   updateRoleSchema,
   updateRoleStatusSchema,
+  assignPermissionSchema,
+  rolePermissionParamsSchema,
+  rolePermissionDeleteParamsSchema,
 } = require("./role.validation");
 
 const authenticate = require("../../middleware/authenticate");
@@ -249,6 +254,131 @@ router.delete(
   authenticate,
   permission("role.delete"),
   roleController.deleteRole
+);
+
+/**
+ * @swagger
+ * /roles/{id}/permissions:
+ *   get:
+ *     summary: Get permissions assigned to a role
+ *     tags: [Roles]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Role UUID
+ *     responses:
+ *       200:
+ *         description: Role permissions fetched successfully
+ *       401:
+ *         description: Authentication required
+ *       403:
+ *         description: Permission denied
+ *       404:
+ *         description: Role not found
+ */
+router.get(
+  "/:id/permissions",
+  authenticate,
+  permission("role.read"),
+  validateParams(rolePermissionParamsSchema),
+  roleController.getRolePermissions
+);
+
+/**
+ * @swagger
+ * /roles/{id}/permissions:
+ *   post:
+ *     summary: Assign a permission to a role
+ *     tags: [Roles]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Role UUID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - permissionId
+ *             properties:
+ *               permissionId:
+ *                 type: string
+ *                 format: uuid
+ *                 example: 4c2b935d-6fa2-4c64-82ce-ff1f47fc7fee
+ *     responses:
+ *       201:
+ *         description: Permission assigned to role successfully
+ *       401:
+ *         description: Authentication required
+ *       403:
+ *         description: Permission denied
+ *       404:
+ *         description: Role or permission not found
+ *       409:
+ *         description: Permission already assigned to role
+ */
+router.post(
+  "/:id/permissions",
+  authenticate,
+  permission("role.update"),
+  validateParams(rolePermissionParamsSchema),
+  validate(assignPermissionSchema),
+  roleController.assignPermissionToRole
+);
+
+/**
+ * @swagger
+ * /roles/{id}/permissions/{permissionId}:
+ *   delete:
+ *     summary: Remove a permission from a role
+ *     tags: [Roles]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Role UUID
+ *       - in: path
+ *         name: permissionId
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Permission UUID
+ *     responses:
+ *       200:
+ *         description: Permission removed from role successfully
+ *       401:
+ *         description: Authentication required
+ *       403:
+ *         description: Permission denied
+ *       404:
+ *         description: Role, permission, or assignment not found
+ */
+router.delete(
+  "/:id/permissions/:permissionId",
+  authenticate,
+  permission("role.update"),
+  validateParams(rolePermissionDeleteParamsSchema),
+  roleController.removePermissionFromRole
 );
 
 module.exports = router;

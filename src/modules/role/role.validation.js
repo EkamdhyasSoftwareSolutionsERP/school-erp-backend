@@ -32,8 +32,24 @@ const updateRoleStatusSchema = Joi.object({
   isActive: Joi.boolean().required(),
 });
 
+const assignPermissionSchema = Joi.object({
+  permissionId: Joi.string().uuid().required(),
+});
+
+const rolePermissionParamsSchema = Joi.object({
+  id: Joi.string().uuid().required(),
+});
+
+const rolePermissionDeleteParamsSchema = Joi.object({
+  id: Joi.string().uuid().required(),
+  permissionId: Joi.string().uuid().required(),
+});
+
 module.exports = {
   createRoleSchema,
   updateRoleSchema,
   updateRoleStatusSchema,
+  assignPermissionSchema,
+  rolePermissionParamsSchema,
+  rolePermissionDeleteParamsSchema,
 };

@@ -1,7 +1,8 @@
 const jwt = require("jsonwebtoken");
 const ApiError = require("../common/ApiError");
+const userRepository = require("../modules/user/user.repository");
 
-const authenticate = (req, res, next) => {
+const authenticate = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
 
@@ -15,6 +16,15 @@ const authenticate = (req, res, next) => {
       token,
       process.env.JWT_ACCESS_SECRET
     );
+    const user = await userRepository.getUserById(decoded.id);
+
+    if (!user) {
+      throw new ApiError(401, "User not found");
+    }
+
+    if (!user.is_active) {
+      throw new ApiError(403, "User account is inactive");
+    }
 
     req.user = decoded;
 

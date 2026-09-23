@@ -31,7 +31,7 @@ const router = express.Router();
 router.get(
   "/",
   authenticate,
-  permission("role.read"),
+  permission("permission.read"),
   permissionController.getAllPermissions
 );
 
@@ -64,7 +64,7 @@ router.get(
 router.get(
   "/:id",
   authenticate,
-  permission("role.read"),
+  permission("permission.read"),
   permissionController.getPermissionById
 );
 

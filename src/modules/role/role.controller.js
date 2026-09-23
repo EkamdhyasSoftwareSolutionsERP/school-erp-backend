@@ -156,6 +156,26 @@ const removePermissionFromRole = async (req, res, next) => {
   }
 };
 
+const replaceRolePermissions = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { permissionIds } = req.body;
+
+    const permissions = await roleService.replaceRolePermissions(
+      id,
+      permissionIds
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Role permissions replaced successfully",
+      data: permissions,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getAllRoles,
   getRoleById,
@@ -166,4 +186,5 @@ module.exports = {
   getRolePermissions,
   assignPermissionToRole,
   removePermissionFromRole,
+  replaceRolePermissions,
 };

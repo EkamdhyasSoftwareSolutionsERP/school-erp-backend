@@ -147,6 +147,33 @@ const removePermissionFromRole = async (roleId, permissionId) => {
   return removed;
 };
 
+const replaceRolePermissions = async (roleId, permissionIds) => {
+  const role = await roleRepository.getRoleById(roleId);
+
+  if (!role) {
+    throw new ApiError(404, "Role not found");
+  }
+
+  const uniquePermissionIds = [...new Set(permissionIds)];
+
+  for (const permissionId of uniquePermissionIds) {
+    const permission =
+      await permissionRepository.getPermissionById(permissionId);
+
+    if (!permission) {
+      throw new ApiError(
+        404,
+        `Permission not found: ${permissionId}`
+      );
+    }
+  }
+
+  return await roleRepository.replaceRolePermissions(
+    roleId,
+    uniquePermissionIds
+  );
+};
+
 module.exports = {
   getAllRoles,
   getRoleById,
@@ -157,4 +184,5 @@ module.exports = {
   getRolePermissions,
   assignPermissionToRole,
   removePermissionFromRole,
+  replaceRolePermissions,
 };

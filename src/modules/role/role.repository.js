@@ -188,6 +188,45 @@ const removePermissionFromRole = async (roleId, permissionId) => {
   return result.rows[0];
 };
 
+const replaceRolePermissions = async (roleId, permissionIds) => {
+  const client = await db.connect();
+
+  try {
+    await client.query("BEGIN");
+
+    await client.query(
+      `
+      DELETE FROM role_permissions
+      WHERE role_id = $1
+      `,
+      [roleId]
+    );
+
+    for (const permissionId of permissionIds) {
+      await client.query(
+        `
+        INSERT INTO role_permissions (
+          role_id,
+          permission_id
+        )
+        VALUES ($1, $2)
+        ON CONFLICT (role_id, permission_id) DO NOTHING
+        `,
+        [roleId, permissionId]
+      );
+    }
+
+    await client.query("COMMIT");
+
+    return await getRolePermissions(roleId);
+  } catch (error) {
+    await client.query("ROLLBACK");
+    throw error;
+  } finally {
+    client.release();
+  }
+};
+
 module.exports = {
   getAllRoles,
   getRoleById,
@@ -199,4 +238,5 @@ module.exports = {
   getRolePermissions,
   assignPermissionToRole,
   removePermissionFromRole,
+  replaceRolePermissions,
 };

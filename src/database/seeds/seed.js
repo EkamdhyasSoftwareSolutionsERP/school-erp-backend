@@ -60,6 +60,8 @@ const seedPermissions = async () => {
     ["role.create", "Create roles"],
     ["role.update", "Update roles"],
     ["role.delete", "Delete roles"],
+    ["role.permissions.update", "Update role permissions"],
+    ["permission.read", "View permissions"],
 
     ["academic_year.read", "View academic years"],
     ["academic_year.create", "Create academic years"],

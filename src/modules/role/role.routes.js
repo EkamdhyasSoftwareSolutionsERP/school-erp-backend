@@ -13,6 +13,7 @@ const {
   assignPermissionSchema,
   rolePermissionParamsSchema,
   rolePermissionDeleteParamsSchema,
+  replaceRolePermissionsSchema,
 } = require("./role.validation");
 
 const authenticate = require("../../middleware/authenticate");
@@ -172,7 +173,7 @@ router.post(
 router.patch(
   "/:id",
   authenticate,
-  permission("role.update"),
+  permission("role.permissions.update"),
   validate(updateRoleSchema),
   roleController.updateRole
 );
@@ -219,7 +220,7 @@ router.patch(
 router.patch(
   "/:id/status",
   authenticate,
-  permission("role.update"),
+  permission("role.permissions.update"),
   validate(updateRoleStatusSchema),
   roleController.updateRoleStatus
 );
@@ -334,7 +335,7 @@ router.get(
 router.post(
   "/:id/permissions",
   authenticate,
-  permission("role.update"),
+  permission("role.permissions.update"),
   validateParams(rolePermissionParamsSchema),
   validate(assignPermissionSchema),
   roleController.assignPermissionToRole
@@ -376,9 +377,62 @@ router.post(
 router.delete(
   "/:id/permissions/:permissionId",
   authenticate,
-  permission("role.update"),
+  permission("role.permissions.update"),
   validateParams(rolePermissionDeleteParamsSchema),
   roleController.removePermissionFromRole
+);
+
+/**
+ * @swagger
+ * /roles/{id}/permissions:
+ *   put:
+ *     summary: Replace all permissions assigned to a role
+ *     tags: [Roles]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Role UUID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - permissionIds
+ *             properties:
+ *               permissionIds:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   format: uuid
+ *                 example:
+ *                   - 4c2b935d-6fa2-4c64-82ce-ff1f47fc7fee
+ *     responses:
+ *       200:
+ *         description: Role permissions replaced successfully
+ *       400:
+ *         description: Validation failed
+ *       401:
+ *         description: Authentication required
+ *       403:
+ *         description: Permission denied
+ *       404:
+ *         description: Role or permission not found
+ */
+router.put(
+  "/:id/permissions",
+  authenticate,
+  permission("role.permissions.update"),
+  validateParams(rolePermissionParamsSchema),
+  validate(replaceRolePermissionsSchema),
+  roleController.replaceRolePermissions
 );
 
 module.exports = router;

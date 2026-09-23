@@ -45,6 +45,13 @@ const rolePermissionDeleteParamsSchema = Joi.object({
   permissionId: Joi.string().uuid().required(),
 });
 
+const replaceRolePermissionsSchema = Joi.object({
+  permissionIds: Joi.array()
+    .items(Joi.string().uuid().required())
+    .min(0)
+    .required(),
+});
+
 module.exports = {
   createRoleSchema,
   updateRoleSchema,
@@ -52,4 +59,5 @@ module.exports = {
   assignPermissionSchema,
   rolePermissionParamsSchema,
   rolePermissionDeleteParamsSchema,
+  replaceRolePermissionsSchema,
 };

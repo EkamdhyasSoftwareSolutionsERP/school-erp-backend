@@ -5,10 +5,10 @@ const academicYearService =
 // Create Academic Year
 const createAcademicYear = async (req, res, next) => {
   try {
-    const academicYear =
-      await academicYearService.createAcademicYear(
-        req.body
-      );
+    const academicYear = await academicYearService.createAcademicYear(
+      req.body,
+      req.schoolContext.schoolIds
+    );
 
     res.status(201).json({
       success: true,
@@ -29,8 +29,9 @@ const getAllAcademicYears = async (
 ) => {
   try {
     const academicYears =
-      await academicYearService.getAllAcademicYears();
-
+      await academicYearService.getAllAcademicYears(
+      req.schoolContext.schoolIds
+      );
     res.status(200).json({
       success: true,
       message: "Academic years fetched successfully",
@@ -50,9 +51,10 @@ const getAcademicYearById = async (
 ) => {
   try {
     const academicYear =
-      await academicYearService.getAcademicYearById(
-        req.params.id
-      );
+    await academicYearService.getAcademicYearById(
+      req.params.id,
+      req.schoolContext.schoolIds
+    );
 
     res.status(200).json({
       success: true,
@@ -75,7 +77,8 @@ const updateAcademicYear = async (
     const academicYear =
       await academicYearService.updateAcademicYear(
         req.params.id,
-        req.body
+        req.body,
+        req.schoolContext.schoolIds
       );
 
     res.status(200).json({
@@ -97,9 +100,10 @@ const deleteAcademicYear = async (
 ) => {
   try {
     const academicYear =
-      await academicYearService.deleteAcademicYear(
-        req.params.id
-      );
+    await academicYearService.deleteAcademicYear(
+      req.params.id,
+      req.schoolContext.schoolIds
+    );
 
     res.status(200).json({
       success: true,

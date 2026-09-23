@@ -37,7 +37,7 @@ const createAcademicYear = async (academicYearData) => {
 
 
 // Get All Academic Years
-const getAllAcademicYears = async () => {
+const getAllAcademicYears = async (schoolIds) => {
   const query = `
     SELECT
       academic_years.*,
@@ -46,17 +46,18 @@ const getAllAcademicYears = async () => {
     FROM academic_years
     INNER JOIN schools
       ON academic_years.school_id = schools.id
+    WHERE academic_years.school_id = ANY($1::uuid[])
     ORDER BY academic_years.start_date DESC
   `;
 
-  const result = await db.query(query);
+  const result = await db.query(query, [schoolIds]);
 
   return result.rows;
 };
 
 
 // Get Academic Year By ID
-const getAcademicYearById = async (id) => {
+const getAcademicYearById = async (id, schoolIds) => {
   const query = `
     SELECT
       academic_years.*,
@@ -66,9 +67,10 @@ const getAcademicYearById = async (id) => {
     INNER JOIN schools
       ON academic_years.school_id = schools.id
     WHERE academic_years.id = $1
+      AND academic_years.school_id = ANY($2::uuid[])
   `;
 
-  const result = await db.query(query, [id]);
+  const result = await db.query(query, [id, schoolIds]);
 
   return result.rows[0];
 };
@@ -115,7 +117,8 @@ const getCurrentAcademicYearBySchool = async (
 // Update Academic Year
 const updateAcademicYear = async (
   id,
-  academicYearData
+  academicYearData,
+  schoolIds
 ) => {
   const {
     name,
@@ -135,6 +138,7 @@ const updateAcademicYear = async (
       is_active = COALESCE($5, is_active),
       updated_at = CURRENT_TIMESTAMP
     WHERE id = $6
+      AND school_id = ANY($7::uuid[])
     RETURNING *
   `;
 
@@ -145,6 +149,7 @@ const updateAcademicYear = async (
     is_current,
     is_active,
     id,
+    schoolIds,
   ];
 
   const result = await db.query(query, values);
@@ -171,14 +176,18 @@ const resetCurrentAcademicYear = async (
 
 
 // Delete Academic Year
-const deleteAcademicYear = async (id) => {
+const deleteAcademicYear = async (id, schoolIds) => {
   const query = `
     DELETE FROM academic_years
     WHERE id = $1
+      AND school_id = ANY($2::uuid[])
     RETURNING *
   `;
 
-  const result = await db.query(query, [id]);
+  const result = await db.query(query, [
+    id,
+    schoolIds,
+  ]);
 
   return result.rows[0];
 };

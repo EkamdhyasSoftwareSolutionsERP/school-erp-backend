@@ -17,6 +17,8 @@ const {
   updateAcademicYearSchema,
 } = require("./academicYear.validation");
 
+const tenant = require("../../middleware/tenant");
+
 const router = express.Router();
 
 
@@ -81,6 +83,7 @@ const router = express.Router();
 router.post(
   "/",
   authenticate,
+  tenant,
   permission("academic_year.create"),
   validate(createAcademicYearSchema),
   academicYearController.createAcademicYear
@@ -106,6 +109,7 @@ router.post(
 router.get(
   "/",
   authenticate,
+  tenant,
   permission("academic_year.read"),
   academicYearController.getAllAcademicYears
 );
@@ -139,6 +143,7 @@ router.get(
 router.get(
   "/:id",
   authenticate,
+  tenant,
   permission("academic_year.read"),
   academicYearController.getAcademicYearById
 );
@@ -199,6 +204,7 @@ router.get(
 router.patch(
   "/:id",
   authenticate,
+  tenant,
   permission("academic_year.update"),
   validate(updateAcademicYearSchema),
   academicYearController.updateAcademicYear
@@ -233,6 +239,7 @@ router.patch(
 router.delete(
   "/:id",
   authenticate,
+  tenant,
   permission("academic_year.delete"),
   academicYearController.deleteAcademicYear
 );

@@ -6,24 +6,30 @@ const ApiError =
 
 
 // Create Academic Year
-const createAcademicYear = async (
-  academicYearData
-) => {
-  const {
-    school_id,
-    name,
-    start_date,
-    end_date,
-    is_current,
-  } = academicYearData;
+const createAcademicYear = async (academicYearData, schoolIds) => {
+  if (!schoolIds || schoolIds.length === 0) {
+    throw new ApiError(
+      403,
+      "No authorized school context found"
+    );
+  }
 
-  // Check duplicate academic year
+  if (schoolIds.length > 1) {
+    throw new ApiError(
+      400,
+      "Multiple schools are authorized. School context must be selected."
+    );
+  }
+
+  const school_id = schoolIds[0];
+
+  const { name, start_date, end_date, is_current } = academicYearData;
+
   const existingAcademicYear =
-    await academicYearRepository
-      .getAcademicYearBySchoolAndName(
-        school_id,
-        name
-      );
+    await academicYearRepository.getAcademicYearBySchoolAndName(
+      school_id,
+      name
+    );
 
   if (existingAcademicYear) {
     throw new ApiError(
@@ -32,7 +38,6 @@ const createAcademicYear = async (
     );
   }
 
-  // Validate dates
   if (new Date(start_date) >= new Date(end_date)) {
     throw new ApiError(
       400,
@@ -40,36 +45,35 @@ const createAcademicYear = async (
     );
   }
 
-  // If new academic year is current,
-  // reset existing current academic year
   if (is_current === true) {
-    await academicYearRepository
-      .resetCurrentAcademicYear(school_id);
+    await academicYearRepository.resetCurrentAcademicYear(
+      school_id
+    );
   }
 
-  return await academicYearRepository
-    .createAcademicYear(academicYearData);
+  return await academicYearRepository.createAcademicYear({
+    school_id,
+    name,
+    start_date,
+    end_date,
+    is_current,
+  });
 };
 
 
 // Get All Academic Years
-const getAllAcademicYears = async () => {
-  return await academicYearRepository
-    .getAllAcademicYears();
+const getAllAcademicYears = async (schoolIds) => {
+  return await academicYearRepository.getAllAcademicYears(schoolIds);
 };
 
 
 // Get Academic Year By ID
-const getAcademicYearById = async (id) => {
+const getAcademicYearById = async (id, schoolIds) => {
   const academicYear =
-    await academicYearRepository
-      .getAcademicYearById(id);
+    await academicYearRepository.getAcademicYearById(id, schoolIds);
 
   if (!academicYear) {
-    throw new ApiError(
-      404,
-      "Academic year not found"
-    );
+    throw new ApiError(404, "Academic year not found");
   }
 
   return academicYear;
@@ -79,11 +83,14 @@ const getAcademicYearById = async (id) => {
 // Update Academic Year
 const updateAcademicYear = async (
   id,
-  academicYearData
+  academicYearData,
+  schoolIds,
 ) => {
   const academicYear =
     await academicYearRepository
-      .getAcademicYearById(id);
+      .getAcademicYearById(id,
+        schoolIds,
+      );
 
   if (!academicYear) {
     throw new ApiError(
@@ -139,22 +146,22 @@ const updateAcademicYear = async (
   return await academicYearRepository
     .updateAcademicYear(
       id,
-      academicYearData
+      academicYearData,
+      schoolIds
     );
 };
 
 
 // Delete Academic Year
-const deleteAcademicYear = async (id) => {
+const deleteAcademicYear = async (id, schoolIds) => {
   const academicYear =
-    await academicYearRepository
-      .deleteAcademicYear(id);
+    await academicYearRepository.deleteAcademicYear(
+      id,
+      schoolIds
+    );
 
   if (!academicYear) {
-    throw new ApiError(
-      404,
-      "Academic year not found"
-    );
+    throw new ApiError(404, "Academic year not found");
   }
 
   return academicYear;

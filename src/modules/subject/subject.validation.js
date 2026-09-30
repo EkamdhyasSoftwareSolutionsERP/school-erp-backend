@@ -3,15 +3,6 @@ const Joi = require("joi");
 
 // Create Subject Validation
 const createSubjectSchema = Joi.object({
-  school_id: Joi.string()
-    .uuid()
-    .required()
-    .messages({
-      "string.empty": "School ID is required",
-      "string.uuid": "School ID must be a valid UUID",
-      "any.required": "School ID is required",
-    }),
-
   name: Joi.string()
     .trim()
     .min(1)

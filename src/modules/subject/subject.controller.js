@@ -1,11 +1,11 @@
 const subjectService = require("./subject.service");
 
-
 // Create Subject
 const createSubject = async (req, res, next) => {
   try {
     const subject = await subjectService.createSubject(
-      req.body
+      req.body,
+      req.schoolContext.schoolIds
     );
 
     res.status(201).json({
@@ -18,11 +18,12 @@ const createSubject = async (req, res, next) => {
   }
 };
 
-
 // Get All Subjects
 const getAllSubjects = async (req, res, next) => {
   try {
-    const subjects = await subjectService.getAllSubjects();
+    const subjects = await subjectService.getAllSubjects(
+      req.schoolContext.schoolIds
+    );
 
     res.status(200).json({
       success: true,
@@ -34,12 +35,12 @@ const getAllSubjects = async (req, res, next) => {
   }
 };
 
-
 // Get Subject By ID
 const getSubjectById = async (req, res, next) => {
   try {
     const subject = await subjectService.getSubjectById(
-      req.params.id
+      req.params.id,
+      req.schoolContext.schoolIds
     );
 
     res.status(200).json({
@@ -52,13 +53,13 @@ const getSubjectById = async (req, res, next) => {
   }
 };
 
-
 // Update Subject
 const updateSubject = async (req, res, next) => {
   try {
     const subject = await subjectService.updateSubject(
       req.params.id,
-      req.body
+      req.body,
+      req.schoolContext.schoolIds
     );
 
     res.status(200).json({
@@ -71,12 +72,12 @@ const updateSubject = async (req, res, next) => {
   }
 };
 
-
 // Delete Subject
 const deleteSubject = async (req, res, next) => {
   try {
     const subject = await subjectService.deleteSubject(
-      req.params.id
+      req.params.id,
+      req.schoolContext.schoolIds
     );
 
     res.status(200).json({
@@ -88,7 +89,6 @@ const deleteSubject = async (req, res, next) => {
     next(error);
   }
 };
-
 
 module.exports = {
   createSubject,

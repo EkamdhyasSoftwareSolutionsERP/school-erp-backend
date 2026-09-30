@@ -1,19 +1,33 @@
 const subjectRepository = require("./subject.repository");
 const ApiError = require("../../common/ApiError");
 
-
 // Create Subject
-const createSubject = async (subjectData) => {
+const createSubject = async (subjectData, schoolIds) => {
+  if (!schoolIds || schoolIds.length === 0) {
+    throw new ApiError(
+      403,
+      "No authorized school context found"
+    );
+  }
+
+  if (schoolIds.length > 1) {
+    throw new ApiError(
+      400,
+      "Multiple schools are authorized. School context must be selected."
+    );
+  }
+
+  const schoolId = schoolIds[0];
+
   const {
-    school_id,
     name,
     code,
   } = subjectData;
 
-  // Check duplicate subject name
+  // Check duplicate subject name within authorized school
   const existingSubject =
     await subjectRepository.getSubjectBySchoolAndName(
-      school_id,
+      schoolId,
       name
     );
 
@@ -24,10 +38,10 @@ const createSubject = async (subjectData) => {
     );
   }
 
-  // Check duplicate subject code
+  // Check duplicate subject code within authorized school
   const existingCode =
     await subjectRepository.getSubjectBySchoolAndCode(
-      school_id,
+      schoolId,
       code
     );
 
@@ -38,20 +52,44 @@ const createSubject = async (subjectData) => {
     );
   }
 
-  return await subjectRepository.createSubject(subjectData);
+  return await subjectRepository.createSubject(
+    {
+      ...subjectData,
+      school_id: schoolId,
+    }
+  );
 };
 
 
 // Get All Subjects
-const getAllSubjects = async () => {
-  return await subjectRepository.getAllSubjects();
+const getAllSubjects = async (schoolIds) => {
+  if (!schoolIds || schoolIds.length === 0) {
+    throw new ApiError(
+      403,
+      "No authorized school context found"
+    );
+  }
+
+  return await subjectRepository.getAllSubjects(
+    schoolIds
+  );
 };
 
 
 // Get Subject By ID
-const getSubjectById = async (id) => {
+const getSubjectById = async (id, schoolIds) => {
+  if (!schoolIds || schoolIds.length === 0) {
+    throw new ApiError(
+      403,
+      "No authorized school context found"
+    );
+  }
+
   const subject =
-    await subjectRepository.getSubjectById(id);
+    await subjectRepository.getSubjectById(
+      id,
+      schoolIds
+    );
 
   if (!subject) {
     throw new ApiError(
@@ -65,9 +103,23 @@ const getSubjectById = async (id) => {
 
 
 // Update Subject
-const updateSubject = async (id, subjectData) => {
+const updateSubject = async (
+  id,
+  subjectData,
+  schoolIds
+) => {
+  if (!schoolIds || schoolIds.length === 0) {
+    throw new ApiError(
+      403,
+      "No authorized school context found"
+    );
+  }
+
   const subject =
-    await subjectRepository.getSubjectById(id);
+    await subjectRepository.getSubjectById(
+      id,
+      schoolIds
+    );
 
   if (!subject) {
     throw new ApiError(
@@ -116,15 +168,26 @@ const updateSubject = async (id, subjectData) => {
 
   return await subjectRepository.updateSubject(
     id,
-    subjectData
+    subjectData,
+    schoolIds
   );
 };
 
 
 // Delete Subject
-const deleteSubject = async (id) => {
+const deleteSubject = async (id, schoolIds) => {
+  if (!schoolIds || schoolIds.length === 0) {
+    throw new ApiError(
+      403,
+      "No authorized school context found"
+    );
+  }
+
   const subject =
-    await subjectRepository.deleteSubject(id);
+    await subjectRepository.deleteSubject(
+      id,
+      schoolIds
+    );
 
   if (!subject) {
     throw new ApiError(

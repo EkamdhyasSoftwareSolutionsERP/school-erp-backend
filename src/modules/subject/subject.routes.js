@@ -8,6 +8,8 @@ const permission = require("../../middleware/permission");
 
 const validate = require("../../middleware/validate");
 
+const tenant = require("../../middleware/tenant");
+
 const {
   createSubjectSchema,
   updateSubjectSchema,
@@ -39,14 +41,9 @@ const router = express.Router();
  *           schema:
  *             type: object
  *             required:
- *               - school_id
  *               - name
  *               - code
  *             properties:
- *               school_id:
- *                 type: string
- *                 format: uuid
- *                 example: 123e4567-e89b-12d3-a456-426614174000
  *               name:
  *                 type: string
  *                 minLength: 1
@@ -73,6 +70,7 @@ const router = express.Router();
 router.post(
   "/",
   authenticate,
+  tenant,
   permission("subject.create"),
   validate(createSubjectSchema),
   subjectController.createSubject
@@ -98,6 +96,7 @@ router.post(
 router.get(
   "/",
   authenticate,
+  tenant,
   permission("subject.read"),
   subjectController.getAllSubjects
 );
@@ -131,6 +130,7 @@ router.get(
 router.get(
   "/:id",
   authenticate,
+  tenant,
   permission("subject.read"),
   subjectController.getSubjectById
 );
@@ -190,6 +190,7 @@ router.get(
 router.patch(
   "/:id",
   authenticate,
+  tenant,
   permission("subject.update"),
   validate(updateSubjectSchema),
   subjectController.updateSubject
@@ -224,6 +225,7 @@ router.patch(
 router.delete(
   "/:id",
   authenticate,
+  tenant,
   permission("subject.delete"),
   subjectController.deleteSubject
 );

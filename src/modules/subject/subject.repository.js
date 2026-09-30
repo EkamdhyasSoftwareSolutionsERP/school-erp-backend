@@ -34,7 +34,7 @@ const createSubject = async (subjectData) => {
 
 
 // Get All Subjects
-const getAllSubjects = async () => {
+const getAllSubjects = async (schoolIds) => {
   const query = `
     SELECT
       subjects.*,
@@ -47,19 +47,21 @@ const getAllSubjects = async () => {
     INNER JOIN schools
       ON subjects.school_id = schools.id
 
+    WHERE subjects.school_id = ANY($1::uuid[])
+
     ORDER BY
       schools.name ASC,
       subjects.name ASC
   `;
 
-  const result = await db.query(query);
+  const result = await db.query(query, [schoolIds]);
 
   return result.rows;
 };
 
 
 // Get Subject By ID
-const getSubjectById = async (id) => {
+const getSubjectById = async (id, schoolIds) => {
   const query = `
     SELECT
       subjects.*,
@@ -73,9 +75,13 @@ const getSubjectById = async (id) => {
       ON subjects.school_id = schools.id
 
     WHERE subjects.id = $1
+      AND subjects.school_id = ANY($2::uuid[])
   `;
 
-  const result = await db.query(query, [id]);
+  const result = await db.query(query, [
+    id,
+    schoolIds,
+  ]);
 
   return result.rows[0];
 };
@@ -126,7 +132,8 @@ const getSubjectBySchoolAndCode = async (
 // Update Subject
 const updateSubject = async (
   id,
-  subjectData
+  subjectData,
+  schoolIds
 ) => {
   const {
     name,
@@ -143,7 +150,10 @@ const updateSubject = async (
       description = COALESCE($3, description),
       is_active = COALESCE($4, is_active),
       updated_at = CURRENT_TIMESTAMP
+
     WHERE id = $5
+      AND school_id = ANY($6::uuid[])
+
     RETURNING *
   `;
 
@@ -153,6 +163,7 @@ const updateSubject = async (
     description,
     is_active,
     id,
+    schoolIds,
   ];
 
   const result = await db.query(query, values);
@@ -162,14 +173,21 @@ const updateSubject = async (
 
 
 // Delete Subject
-const deleteSubject = async (id) => {
+const deleteSubject = async (
+  id,
+  schoolIds
+) => {
   const query = `
     DELETE FROM subjects
     WHERE id = $1
+      AND school_id = ANY($2::uuid[])
     RETURNING *
   `;
 
-  const result = await db.query(query, [id]);
+  const result = await db.query(query, [
+    id,
+    schoolIds,
+  ]);
 
   return result.rows[0];
 };

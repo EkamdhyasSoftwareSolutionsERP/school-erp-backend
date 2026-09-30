@@ -1,10 +1,8 @@
 const db = require("../../config/dataBase");
 
-
 // Create Standard
-const createStandard = async (standardData) => {
+const createStandard = async (standardData, schoolId) => {
   const {
-    school_id,
     name,
     code,
     display_order,
@@ -22,7 +20,7 @@ const createStandard = async (standardData) => {
   `;
 
   const values = [
-    school_id,
+    schoolId,
     name,
     code,
     display_order,
@@ -33,9 +31,8 @@ const createStandard = async (standardData) => {
   return result.rows[0];
 };
 
-
 // Get All Standards
-const getAllStandards = async () => {
+const getAllStandards = async (schoolIds) => {
   const query = `
     SELECT
       standards.*,
@@ -44,17 +41,17 @@ const getAllStandards = async () => {
     FROM standards
     INNER JOIN schools
       ON standards.school_id = schools.id
+    WHERE standards.school_id = ANY($1::uuid[])
     ORDER BY standards.display_order ASC
   `;
 
-  const result = await db.query(query);
+  const result = await db.query(query, [schoolIds]);
 
   return result.rows;
 };
 
-
 // Get Standard By ID
-const getStandardById = async (id) => {
+const getStandardById = async (id, schoolIds) => {
   const query = `
     SELECT
       standards.*,
@@ -64,13 +61,16 @@ const getStandardById = async (id) => {
     INNER JOIN schools
       ON standards.school_id = schools.id
     WHERE standards.id = $1
+      AND standards.school_id = ANY($2::uuid[])
   `;
 
-  const result = await db.query(query, [id]);
+  const result = await db.query(query, [
+    id,
+    schoolIds,
+  ]);
 
   return result.rows[0];
 };
-
 
 // Get Standard By School And Name
 const getStandardBySchoolAndName = async (
@@ -92,7 +92,6 @@ const getStandardBySchoolAndName = async (
   return result.rows[0];
 };
 
-
 // Get Standard By School And Code
 const getStandardBySchoolAndCode = async (
   schoolId,
@@ -113,11 +112,11 @@ const getStandardBySchoolAndCode = async (
   return result.rows[0];
 };
 
-
 // Update Standard
 const updateStandard = async (
   id,
-  standardData
+  standardData,
+  schoolIds
 ) => {
   const {
     name,
@@ -135,6 +134,7 @@ const updateStandard = async (
       is_active = COALESCE($4, is_active),
       updated_at = CURRENT_TIMESTAMP
     WHERE id = $5
+      AND school_id = ANY($6::uuid[])
     RETURNING *
   `;
 
@@ -144,6 +144,7 @@ const updateStandard = async (
     display_order,
     is_active,
     id,
+    schoolIds,
   ];
 
   const result = await db.query(query, values);
@@ -151,20 +152,25 @@ const updateStandard = async (
   return result.rows[0];
 };
 
-
 // Delete Standard
-const deleteStandard = async (id) => {
+const deleteStandard = async (
+  id,
+  schoolIds
+) => {
   const query = `
     DELETE FROM standards
     WHERE id = $1
+      AND school_id = ANY($2::uuid[])
     RETURNING *
   `;
 
-  const result = await db.query(query, [id]);
+  const result = await db.query(query, [
+    id,
+    schoolIds,
+  ]);
 
   return result.rows[0];
 };
-
 
 module.exports = {
   createStandard,
@@ -174,4 +180,4 @@ module.exports = {
   getStandardBySchoolAndCode,
   updateStandard,
   deleteStandard,
-};  
+};

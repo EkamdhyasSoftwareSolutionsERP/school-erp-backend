@@ -1,17 +1,7 @@
 const Joi = require("joi");
 
-
 // Create Standard Validation
 const createStandardSchema = Joi.object({
-  school_id: Joi.string()
-    .uuid()
-    .required()
-    .messages({
-      "string.empty": "School ID is required",
-      "string.uuid": "School ID must be a valid UUID",
-      "any.required": "School ID is required",
-    }),
-
   name: Joi.string()
     .trim()
     .min(1)
@@ -46,7 +36,6 @@ const createStandardSchema = Joi.object({
     }),
 });
 
-
 // Update Standard Validation
 const updateStandardSchema = Joi.object({
   name: Joi.string()
@@ -78,7 +67,6 @@ const updateStandardSchema = Joi.object({
 
   is_active: Joi.boolean(),
 }).min(1);
-
 
 module.exports = {
   createStandardSchema,

@@ -8,6 +8,8 @@ const permission = require("../../middleware/permission");
 
 const validate = require("../../middleware/validate");
 
+const tenant = require("../../middleware/tenant");
+
 const {
   createStandardSchema,
   updateStandardSchema,
@@ -39,15 +41,10 @@ const router = express.Router();
  *           schema:
  *             type: object
  *             required:
- *               - school_id
  *               - name
  *               - code
  *               - display_order
  *             properties:
- *               school_id:
- *                 type: string
- *                 format: uuid
- *                 example: 123e4567-e89b-12d3-a456-426614174000
  *               name:
  *                 type: string
  *                 minLength: 1
@@ -75,6 +72,7 @@ const router = express.Router();
 router.post(
   "/",
   authenticate,
+  tenant,
   permission("standard.create"),
   validate(createStandardSchema),
   standardController.createStandard
@@ -100,6 +98,7 @@ router.post(
 router.get(
   "/",
   authenticate,
+  tenant,
   permission("standard.read"),
   standardController.getAllStandards
 );
@@ -133,6 +132,7 @@ router.get(
 router.get(
   "/:id",
   authenticate,
+  tenant,
   permission("standard.read"),
   standardController.getStandardById
 );
@@ -193,6 +193,7 @@ router.get(
 router.patch(
   "/:id",
   authenticate,
+  tenant,
   permission("standard.update"),
   validate(updateStandardSchema),
   standardController.updateStandard
@@ -227,6 +228,7 @@ router.patch(
 router.delete(
   "/:id",
   authenticate,
+  tenant,
   permission("standard.delete"),
   standardController.deleteStandard
 );

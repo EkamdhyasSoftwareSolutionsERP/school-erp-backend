@@ -1,19 +1,30 @@
 const standardRepository = require("./standard.repository");
 const ApiError = require("../../common/ApiError");
 
-
 // Create Standard
-const createStandard = async (standardData) => {
-  const {
-    school_id,
-    name,
-    code,
-  } = standardData;
+const createStandard = async (standardData, schoolIds) => {
+  if (!schoolIds || schoolIds.length === 0) {
+    throw new ApiError(
+      403,
+      "No authorized school context found"
+    );
+  }
+
+  if (schoolIds.length > 1) {
+    throw new ApiError(
+      400,
+      "Multiple schools are authorized. School context must be selected."
+    );
+  }
+
+  const schoolId = schoolIds[0];
+
+  const { name, code } = standardData;
 
   // Check duplicate standard name
   const existingStandard =
     await standardRepository.getStandardBySchoolAndName(
-      school_id,
+      schoolId,
       name
     );
 
@@ -27,7 +38,7 @@ const createStandard = async (standardData) => {
   // Check duplicate standard code
   const existingCode =
     await standardRepository.getStandardBySchoolAndCode(
-      school_id,
+      schoolId,
       code
     );
 
@@ -39,21 +50,25 @@ const createStandard = async (standardData) => {
   }
 
   return await standardRepository.createStandard(
-    standardData
+    standardData,
+    schoolId
   );
 };
 
-
 // Get All Standards
-const getAllStandards = async () => {
-  return await standardRepository.getAllStandards();
+const getAllStandards = async (schoolIds) => {
+  return await standardRepository.getAllStandards(
+    schoolIds
+  );
 };
 
-
 // Get Standard By ID
-const getStandardById = async (id) => {
+const getStandardById = async (id, schoolIds) => {
   const standard =
-    await standardRepository.getStandardById(id);
+    await standardRepository.getStandardById(
+      id,
+      schoolIds
+    );
 
   if (!standard) {
     throw new ApiError(
@@ -65,14 +80,17 @@ const getStandardById = async (id) => {
   return standard;
 };
 
-
 // Update Standard
 const updateStandard = async (
   id,
-  standardData
+  standardData,
+  schoolIds
 ) => {
   const standard =
-    await standardRepository.getStandardById(id);
+    await standardRepository.getStandardById(
+      id,
+      schoolIds
+    );
 
   if (!standard) {
     throw new ApiError(
@@ -121,15 +139,18 @@ const updateStandard = async (
 
   return await standardRepository.updateStandard(
     id,
-    standardData
+    standardData,
+    schoolIds
   );
 };
 
-
 // Delete Standard
-const deleteStandard = async (id) => {
+const deleteStandard = async (id, schoolIds) => {
   const standard =
-    await standardRepository.deleteStandard(id);
+    await standardRepository.deleteStandard(
+      id,
+      schoolIds
+    );
 
   if (!standard) {
     throw new ApiError(
@@ -140,7 +161,6 @@ const deleteStandard = async (id) => {
 
   return standard;
 };
-
 
 module.exports = {
   createStandard,

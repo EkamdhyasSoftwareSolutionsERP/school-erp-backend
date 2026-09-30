@@ -3,7 +3,10 @@ const standardService = require("./standard.service");
 // Create Standard
 const createStandard = async (req, res, next) => {
   try {
-    const standard = await standardService.createStandard(req.body);
+    const standard = await standardService.createStandard(
+      req.body,
+      req.schoolContext.schoolIds
+    );
 
     res.status(201).json({
       success: true,
@@ -18,7 +21,9 @@ const createStandard = async (req, res, next) => {
 // Get All Standards
 const getAllStandards = async (req, res, next) => {
   try {
-    const standards = await standardService.getAllStandards();
+    const standards = await standardService.getAllStandards(
+      req.schoolContext.schoolIds
+    );
 
     res.status(200).json({
       success: true,
@@ -33,7 +38,10 @@ const getAllStandards = async (req, res, next) => {
 // Get Standard By ID
 const getStandardById = async (req, res, next) => {
   try {
-    const standard = await standardService.getStandardById(req.params.id);
+    const standard = await standardService.getStandardById(
+      req.params.id,
+      req.schoolContext.schoolIds
+    );
 
     res.status(200).json({
       success: true,
@@ -50,7 +58,8 @@ const updateStandard = async (req, res, next) => {
   try {
     const standard = await standardService.updateStandard(
       req.params.id,
-      req.body
+      req.body,
+      req.schoolContext.schoolIds
     );
 
     res.status(200).json({
@@ -66,7 +75,10 @@ const updateStandard = async (req, res, next) => {
 // Delete Standard
 const deleteStandard = async (req, res, next) => {
   try {
-    const standard = await standardService.deleteStandard(req.params.id);
+    const standard = await standardService.deleteStandard(
+      req.params.id,
+      req.schoolContext.schoolIds
+    );
 
     res.status(200).json({
       success: true,

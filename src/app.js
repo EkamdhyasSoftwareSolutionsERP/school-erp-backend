@@ -4,12 +4,13 @@ const swaggerUi = require("swagger-ui-express");
 const swaggerSpec = require("./config/swagger/swagger");
 
 const app = express();
+const cors = require("cors");
+const helmet = require("helmet");
+const rateLimit = require("express-rate-limit");
 
 const notFound = require("./middleware/notFound");
 const errorHandler = require("./middleware/errorHandler");
 
-const validate = require("./middleware/validate");
-const { loginSchema } = require("./modules/auth/auth.validation");
 
 const authRoutes = require("./modules/auth/auth.routes");
 const organizationRoutes = require("./modules/organization/organization.routes");
@@ -22,6 +23,21 @@ const auditRoutes = require("./modules/audit/audit.routes");
 const userRoutes = require("./modules/user/user.routes");
 const roleRoutes = require("./modules/role/role.routes");
 const permissionRoutes = require("./modules/permission/permission.routes");
+
+app.use(helmet());
+
+app.use(cors());
+
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+app.use("/api/v1", apiLimiter);
+
+app.use(express.json({ limit: "10kb" }));
 
 app.use(express.json());
 
@@ -54,17 +70,7 @@ app.get("/api/v1/health", (req, res) => {
   });
 });
 
-app.post(
-  "/api/v1/test-validation",
-  validate(loginSchema),
-  (req, res) => {
-    res.status(200).json({
-      success: true,
-      message: "Validation successful",
-      data: req.body,
-    });
-  }
-);
+
 
 app.use(
   "/api-docs",

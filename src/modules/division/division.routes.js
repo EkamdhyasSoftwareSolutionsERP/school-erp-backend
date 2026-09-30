@@ -8,6 +8,8 @@ const permission = require("../../middleware/permission");
 
 const validate = require("../../middleware/validate");
 
+const tenant = require("../../middleware/tenant");
+
 const {
   createDivisionSchema,
   updateDivisionSchema,
@@ -79,6 +81,7 @@ const router = express.Router();
 router.post(
   "/",
   authenticate,
+  tenant,
   permission("division.create"),
   validate(createDivisionSchema),
   divisionController.createDivision
@@ -104,6 +107,7 @@ router.post(
 router.get(
   "/",
   authenticate,
+  tenant,
   permission("division.read"),
   divisionController.getAllDivisions
 );
@@ -137,6 +141,7 @@ router.get(
 router.get(
   "/:id",
   authenticate,
+  tenant,
   permission("division.read"),
   divisionController.getDivisionById
 );
@@ -197,6 +202,7 @@ router.get(
 router.patch(
   "/:id",
   authenticate,
+  tenant,
   permission("division.update"),
   validate(updateDivisionSchema),
   divisionController.updateDivision
@@ -231,6 +237,7 @@ router.patch(
 router.delete(
   "/:id",
   authenticate,
+  tenant,
   permission("division.delete"),
   divisionController.deleteDivision
 );

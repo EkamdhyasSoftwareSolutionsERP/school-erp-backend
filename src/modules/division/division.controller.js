@@ -4,7 +4,8 @@ const divisionService = require("./division.service");
 const createDivision = async (req, res, next) => {
   try {
     const division = await divisionService.createDivision(
-      req.body
+      req.body,
+      req.schoolContext.schoolIds
     );
 
     res.status(201).json({
@@ -17,11 +18,12 @@ const createDivision = async (req, res, next) => {
   }
 };
 
-
 // Get All Divisions
 const getAllDivisions = async (req, res, next) => {
   try {
-    const divisions = await divisionService.getAllDivisions();
+    const divisions = await divisionService.getAllDivisions(
+      req.schoolContext.schoolIds
+    );
 
     res.status(200).json({
       success: true,
@@ -33,12 +35,12 @@ const getAllDivisions = async (req, res, next) => {
   }
 };
 
-
 // Get Division By ID
 const getDivisionById = async (req, res, next) => {
   try {
     const division = await divisionService.getDivisionById(
-      req.params.id
+      req.params.id,
+      req.schoolContext.schoolIds
     );
 
     res.status(200).json({
@@ -51,13 +53,13 @@ const getDivisionById = async (req, res, next) => {
   }
 };
 
-
 // Update Division
 const updateDivision = async (req, res, next) => {
   try {
     const division = await divisionService.updateDivision(
       req.params.id,
-      req.body
+      req.body,
+      req.schoolContext.schoolIds
     );
 
     res.status(200).json({
@@ -70,12 +72,12 @@ const updateDivision = async (req, res, next) => {
   }
 };
 
-
 // Delete Division
 const deleteDivision = async (req, res, next) => {
   try {
     const division = await divisionService.deleteDivision(
-      req.params.id
+      req.params.id,
+      req.schoolContext.schoolIds
     );
 
     res.status(200).json({
@@ -87,7 +89,6 @@ const deleteDivision = async (req, res, next) => {
     next(error);
   }
 };
-
 
 module.exports = {
   createDivision,

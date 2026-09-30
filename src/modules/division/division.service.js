@@ -1,9 +1,21 @@
 const divisionRepository = require("./division.repository");
 const ApiError = require("../../common/ApiError");
 
-
 // Create Division
-const createDivision = async (divisionData) => {
+const createDivision = async (divisionData, schoolIds) => {
+  if (!schoolIds || schoolIds.length === 0) {
+    throw new ApiError(403, "No authorized school context found");
+  }
+
+  if (schoolIds.length > 1) {
+    throw new ApiError(
+      400,
+      "Multiple schools are authorized. School context must be selected."
+    );
+  }
+
+  const schoolId = schoolIds[0];
+
   const {
     standard_id,
     academic_year_id,
@@ -11,13 +23,42 @@ const createDivision = async (divisionData) => {
     code,
   } = divisionData;
 
+  // Verify Standard belongs to authorized school
+  const standard =
+    await divisionRepository.getStandardByIdAndSchool(
+      standard_id,
+      schoolId
+    );
+
+  if (!standard) {
+    throw new ApiError(
+      404,
+      "Standard not found"
+    );
+  }
+
+  // Verify Academic Year belongs to authorized school
+  const academicYear =
+    await divisionRepository.getAcademicYearByIdAndSchool(
+      academic_year_id,
+      schoolId
+    );
+
+  if (!academicYear) {
+    throw new ApiError(
+      404,
+      "Academic year not found"
+    );
+  }
+
   // Check duplicate division name
   const existingDivision =
     await divisionRepository
       .getDivisionByStandardAcademicYearAndName(
         standard_id,
         academic_year_id,
-        name
+        name,
+        schoolId
       );
 
   if (existingDivision) {
@@ -33,7 +74,8 @@ const createDivision = async (divisionData) => {
       .getDivisionByStandardAcademicYearAndCode(
         standard_id,
         academic_year_id,
-        code
+        code,
+        schoolId
       );
 
   if (existingCode) {
@@ -44,21 +86,27 @@ const createDivision = async (divisionData) => {
   }
 
   return await divisionRepository.createDivision(
-    divisionData
+    divisionData,
+    schoolId
   );
 };
 
-
 // Get All Divisions
-const getAllDivisions = async () => {
-  return await divisionRepository.getAllDivisions();
+const getAllDivisions = async (schoolIds) => {
+  if (!schoolIds || schoolIds.length === 0) {
+    throw new ApiError(403, "No authorized school context found");
+  }
+
+  return await divisionRepository.getAllDivisions(schoolIds);
 };
 
-
 // Get Division By ID
-const getDivisionById = async (id) => {
+const getDivisionById = async (id, schoolIds) => {
   const division =
-    await divisionRepository.getDivisionById(id);
+    await divisionRepository.getDivisionById(
+      id,
+      schoolIds
+    );
 
   if (!division) {
     throw new ApiError(
@@ -70,14 +118,17 @@ const getDivisionById = async (id) => {
   return division;
 };
 
-
 // Update Division
 const updateDivision = async (
   id,
-  divisionData
+  divisionData,
+  schoolIds
 ) => {
   const division =
-    await divisionRepository.getDivisionById(id);
+    await divisionRepository.getDivisionById(
+      id,
+      schoolIds
+    );
 
   if (!division) {
     throw new ApiError(
@@ -96,7 +147,8 @@ const updateDivision = async (
         .getDivisionByStandardAcademicYearAndName(
           division.standard_id,
           division.academic_year_id,
-          divisionData.name
+          divisionData.name,
+          division.school_id
         );
 
     if (existingDivision) {
@@ -117,7 +169,8 @@ const updateDivision = async (
         .getDivisionByStandardAcademicYearAndCode(
           division.standard_id,
           division.academic_year_id,
-          divisionData.code
+          divisionData.code,
+          division.school_id
         );
 
     if (existingCode) {
@@ -130,15 +183,21 @@ const updateDivision = async (
 
   return await divisionRepository.updateDivision(
     id,
-    divisionData
+    divisionData,
+    schoolIds
   );
 };
 
-
 // Delete Division
-const deleteDivision = async (id) => {
+const deleteDivision = async (
+  id,
+  schoolIds
+) => {
   const division =
-    await divisionRepository.deleteDivision(id);
+    await divisionRepository.deleteDivision(
+      id,
+      schoolIds
+    );
 
   if (!division) {
     throw new ApiError(
@@ -149,7 +208,6 @@ const deleteDivision = async (id) => {
 
   return division;
 };
-
 
 module.exports = {
   createDivision,

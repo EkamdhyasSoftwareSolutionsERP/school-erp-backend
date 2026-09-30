@@ -37,7 +37,7 @@ const createDivision = async (divisionData) => {
 
 
 // Get All Divisions
-const getAllDivisions = async () => {
+const getAllDivisions = async (schoolIds) => {
   const query = `
     SELECT
       divisions.*,
@@ -55,19 +55,22 @@ const getAllDivisions = async () => {
     INNER JOIN academic_years
       ON divisions.academic_year_id = academic_years.id
 
+    WHERE standards.school_id = ANY($1::uuid[])
+      AND academic_years.school_id = ANY($1::uuid[])
+
     ORDER BY
       standards.display_order ASC,
       divisions.name ASC
   `;
 
-  const result = await db.query(query);
+  const result = await db.query(query, [schoolIds]);
 
   return result.rows;
 };
 
 
 // Get Division By ID
-const getDivisionById = async (id) => {
+const getDivisionById = async (id, schoolIds) => {
   const query = `
     SELECT
       divisions.*,
@@ -86,9 +89,53 @@ const getDivisionById = async (id) => {
       ON divisions.academic_year_id = academic_years.id
 
     WHERE divisions.id = $1
+      AND standards.school_id = ANY($2::uuid[])
+      AND academic_years.school_id = ANY($2::uuid[])
   `;
 
-  const result = await db.query(query, [id]);
+  const result = await db.query(query, [id, schoolIds]);
+
+  return result.rows[0];
+};
+
+
+// Get Standard By ID And School
+const getStandardByIdAndSchool = async (
+  standardId,
+  schoolId
+) => {
+  const query = `
+    SELECT *
+    FROM standards
+    WHERE id = $1
+      AND school_id = $2
+  `;
+
+  const result = await db.query(query, [
+    standardId,
+    schoolId,
+  ]);
+
+  return result.rows[0];
+};
+
+
+// Get Academic Year By ID And School
+const getAcademicYearByIdAndSchool = async (
+  academicYearId,
+  schoolId
+) => {
+  const query = `
+    SELECT *
+    FROM academic_years
+    WHERE id = $1
+      AND school_id = $2
+  `;
+
+  const result = await db.query(query, [
+    academicYearId,
+    schoolId,
+  ]);
 
   return result.rows[0];
 };
@@ -98,20 +145,32 @@ const getDivisionById = async (id) => {
 const getDivisionByStandardAcademicYearAndName = async (
   standardId,
   academicYearId,
-  name
+  name,
+  schoolId
 ) => {
   const query = `
-    SELECT *
+    SELECT
+      divisions.*
     FROM divisions
-    WHERE standard_id = $1
-      AND academic_year_id = $2
-      AND name = $3
+
+    INNER JOIN standards
+      ON divisions.standard_id = standards.id
+
+    INNER JOIN academic_years
+      ON divisions.academic_year_id = academic_years.id
+
+    WHERE divisions.standard_id = $1
+      AND divisions.academic_year_id = $2
+      AND divisions.name = $3
+      AND standards.school_id = $4
+      AND academic_years.school_id = $4
   `;
 
   const result = await db.query(query, [
     standardId,
     academicYearId,
     name,
+    schoolId,
   ]);
 
   return result.rows[0];
@@ -122,20 +181,32 @@ const getDivisionByStandardAcademicYearAndName = async (
 const getDivisionByStandardAcademicYearAndCode = async (
   standardId,
   academicYearId,
-  code
+  code,
+  schoolId
 ) => {
   const query = `
-    SELECT *
+    SELECT
+      divisions.*
     FROM divisions
-    WHERE standard_id = $1
-      AND academic_year_id = $2
-      AND code = $3
+
+    INNER JOIN standards
+      ON divisions.standard_id = standards.id
+
+    INNER JOIN academic_years
+      ON divisions.academic_year_id = academic_years.id
+
+    WHERE divisions.standard_id = $1
+      AND divisions.academic_year_id = $2
+      AND divisions.code = $3
+      AND standards.school_id = $4
+      AND academic_years.school_id = $4
   `;
 
   const result = await db.query(query, [
     standardId,
     academicYearId,
     code,
+    schoolId,
   ]);
 
   return result.rows[0];
@@ -145,7 +216,8 @@ const getDivisionByStandardAcademicYearAndCode = async (
 // Update Division
 const updateDivision = async (
   id,
-  divisionData
+  divisionData,
+  schoolIds
 ) => {
   const {
     name,
@@ -163,6 +235,18 @@ const updateDivision = async (
       is_active = COALESCE($4, is_active),
       updated_at = CURRENT_TIMESTAMP
     WHERE id = $5
+      AND EXISTS (
+        SELECT 1
+        FROM standards
+        WHERE standards.id = divisions.standard_id
+          AND standards.school_id = ANY($6::uuid[])
+      )
+      AND EXISTS (
+        SELECT 1
+        FROM academic_years
+        WHERE academic_years.id = divisions.academic_year_id
+          AND academic_years.school_id = ANY($6::uuid[])
+      )
     RETURNING *
   `;
 
@@ -172,6 +256,7 @@ const updateDivision = async (
     capacity,
     is_active,
     id,
+    schoolIds,
   ];
 
   const result = await db.query(query, values);
@@ -181,14 +266,32 @@ const updateDivision = async (
 
 
 // Delete Division
-const deleteDivision = async (id) => {
+const deleteDivision = async (
+  id,
+  schoolIds
+) => {
   const query = `
     DELETE FROM divisions
     WHERE id = $1
+      AND EXISTS (
+        SELECT 1
+        FROM standards
+        WHERE standards.id = divisions.standard_id
+          AND standards.school_id = ANY($2::uuid[])
+      )
+      AND EXISTS (
+        SELECT 1
+        FROM academic_years
+        WHERE academic_years.id = divisions.academic_year_id
+          AND academic_years.school_id = ANY($2::uuid[])
+      )
     RETURNING *
   `;
 
-  const result = await db.query(query, [id]);
+  const result = await db.query(query, [
+    id,
+    schoolIds,
+  ]);
 
   return result.rows[0];
 };
@@ -198,6 +301,8 @@ module.exports = {
   createDivision,
   getAllDivisions,
   getDivisionById,
+  getStandardByIdAndSchool,
+  getAcademicYearByIdAndSchool,
   getDivisionByStandardAcademicYearAndName,
   getDivisionByStandardAcademicYearAndCode,
   updateDivision,
